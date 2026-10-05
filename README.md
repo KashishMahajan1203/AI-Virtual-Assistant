@@ -11,7 +11,7 @@ The assistant interprets natural language, answers user questions, and performs 
 ### 📝 SignUp Page
 ![Signup Page](https://res.cloudinary.com/dfacldueh/image/upload/v1791194722/Screenshot_2026-10-05_153421_t7lmmh.png)
 
-### 🔐 SignIn Items
+### 🔐 SignIn Page
 ![Signin Page ](https://res.cloudinary.com/dfacldueh/image/upload/v1791194327/Screenshot_2026-10-05_152647_ikcd7q.png)
 
 ### 🤖 Select Assistant Image 
