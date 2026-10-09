@@ -1,13 +1,28 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" /> <!-- Character encoding -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <!-- Responsive layout -->
-    <link rel="stylesheet" href="./src/assets/react.svg" type="image/x-icon"> <!-- Favicon (React logo) -->
-    <title>Virtual Assistant</title> <!-- Page title -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="A voice-first AI virtual assistant you can name, personalise and talk to." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <title>Virtual Assistant</title>
+    <!-- Apply the saved (or system) theme before first paint to avoid a flash -->
+    <script>
+      (function () {
+        var theme;
+        try { theme = localStorage.getItem("theme"); } catch (e) {}
+        if (theme !== "light" && theme !== "dark") {
+          theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
   </head>
   <body>
-    <div id="root"></div> <!-- React app will be mounted here -->
-    <script type="module" src="/src/main.jsx"></script> <!-- Entry point for React app -->
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

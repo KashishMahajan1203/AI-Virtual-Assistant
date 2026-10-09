@@ -1,8 +1,9 @@
 import React, { useContext } from "react";
-import { userDataContext } from "../context/UserContext";
+import { RiCheckLine } from "react-icons/ri";
+import { userDataContext } from "../context/userDataContext";
 
-function Card({ image }) {
-    // Access context values and setters for managing selected and uploaded images
+// Selectable preset image for the assistant
+function Card({ image, label }) {
     const {
         setBackendImage,
         setFrontendImage,
@@ -10,33 +11,36 @@ function Card({ image }) {
         setSelectedImage,
     } = useContext(userDataContext);
 
-    // Handler function triggered when user clicks on a card
     const handleSelect = () => {
         setSelectedImage(image);   // Mark this image as selected
-        setBackendImage(null);     // Clear any previously uploaded backend image
-        setFrontendImage(null);    // Clear any previously uploaded frontend image
+        setBackendImage(null);     // Clear any previously uploaded image
+        setFrontendImage(null);
     };
 
-    // Determine if this card is currently selected
     const isSelected = selectedImage === image;
 
     return (
-        <div
-            className={`w-[70px] h-[140px] lg:w-[150px] lg:h-[250px]
-                bg-[#020220] border-2 border-[#0000ff66] rounded-2xl
-                overflow-hidden cursor-pointer transition-all
-                hover:shadow-2xl hover:shadow-blue-950 hover:border-4 hover:border-white
-                ${isSelected ? "border-4 border-white shadow-2xl shadow-blue-950" : ""}`}
-            onClick={handleSelect}  // Call handleSelect when user clicks the card
+        <button
+            type="button"
+            aria-pressed={isSelected}
+            aria-label={label}
+            onClick={handleSelect}
+            className={`group relative aspect-[3/5] w-full overflow-hidden rounded-2xl border-2 bg-surface-2 transition
+                ${isSelected ? "border-accent ring-4 ring-accent-soft" : "border-transparent hover:border-line"}`}
         >
-            {/* Display the image in the card; object-cover ensures it fills the div */}
             <img
                 src={image}
-                className="h-full w-full object-cover"
-                alt="assistant-option"
-                draggable="false"   // Prevents dragging the image accidentally
+                className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.04]"
+                alt=""
+                loading="lazy"
+                draggable="false"
             />
-        </div>
+            {isSelected && (
+                <span className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-accent text-accent-fg shadow">
+                    <RiCheckLine className="h-4 w-4" />
+                </span>
+            )}
+        </button>
     );
 }
 

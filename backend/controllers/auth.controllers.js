@@ -117,6 +117,7 @@ export const login = async (req, res) => {
                 email: user.email,
                 assistantName: user.assistantName,
                 assistantImage: user.assistantImage,
+                history: user.history,
             },
         });
 

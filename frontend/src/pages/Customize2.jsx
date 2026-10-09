@@ -1,42 +1,45 @@
 import React, { useContext, useState } from 'react'
-import { userDataContext } from '../context/UserContext'   // Context for user and assistant state
-import { MdKeyboardBackspace } from "react-icons/md";      // Back navigation icon
-import axios from 'axios'                                   // HTTP requests
-import { useNavigate } from 'react-router-dom';            // Navigation between routes
+import axios from 'axios'
+import { useNavigate } from 'react-router-dom'
+import { RiArrowLeftLine } from 'react-icons/ri'
+import { userDataContext } from '../context/userDataContext'
+import AppHeader from '../components/AppHeader'
+import StepHeader from '../components/StepHeader'
+
+const nameSuggestions = ["Jarvis", "Nova", "Shifra", "Echo", "Friday"]
 
 function Customize2() {
-    // Destructure required context values
-    const { userData, backendImage, selectedImage, serverUrl, setUserData } = useContext(userDataContext)
-
-    // Local state for assistant name input and loading state
+    const { userData, backendImage, frontendImage, selectedImage, serverUrl, setUserData } = useContext(userDataContext)
     const [assistantName, setAssistantName] = useState(userData?.assistantName || "")
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState("")
+    const navigate = useNavigate()
 
-    const navigate = useNavigate()   // Navigation hook
+    const previewImage = selectedImage === "input" ? frontendImage : selectedImage || userData?.assistantImage
+    const trimmedName = assistantName.trim()
 
-    // Handle updating assistant data (name + image) to backend
-    const handleUpdateAssistant = async () => {
+    // Save assistant name + image to the backend
+    const handleUpdateAssistant = async (event) => {
+        event.preventDefault()
+        if (!trimmedName) return
         setError("")
-        setLoading(true)  // Show loading state
+        setLoading(true)
         try {
             const formData = new FormData()
-            formData.append("assistantName", assistantName.trim())   // Append assistant name
+            formData.append("assistantName", trimmedName)
             if (backendImage) {
-                formData.append("assistantImage", backendImage)  // Upload backend-selected image if exists
+                formData.append("assistantImage", backendImage)  // Newly uploaded file
             } else {
                 const imageUrl = selectedImage && selectedImage !== "input"
                     ? selectedImage
                     : userData?.assistantImage
                 if (!imageUrl) throw new Error("Select an assistant image before continuing.")
-                formData.append("imageUrl", imageUrl)       // Keep the current image or use selected preset
+                formData.append("imageUrl", imageUrl)       // Preset or current image
             }
 
-            // Send POST request to update assistant
             const result = await axios.post(`${serverUrl}/api/user/update`, formData, { withCredentials: true })
-
-            setUserData(result.data)        // Update user context with updated assistant info
-            navigate("/")                   // Navigate to home/dashboard
+            setUserData(result.data)
+            navigate("/")
         } catch (error) {
             setError(error.response?.data?.message || error.message || "Could not save assistant settings. Please try again.")
         } finally {
@@ -45,47 +48,68 @@ function Customize2() {
     }
 
     return (
-        <div className="w-full h-[100vh] bg-gradient-to-t 
-       from-black to-[#030353] flex justify-center items-center 
-       flex-col p-[20px] relative">
+        <div className="min-h-screen">
+            <AppHeader />
 
-            {/* BACK BUTTON */}
-            <MdKeyboardBackspace 
-                className='absolute top-[30px] left-[30px] text-white cursor-pointer w-[25px] h-[25px]'
-                onClick={() => navigate("/customize")} 
-            />
-
-            {/* HEADING */}
-            <h1 className="text-white text-[30px] mb-[40px] text-center">
-                Enter your <span className="text-blue-200">Assistant Name</span>
-            </h1>
-
-            {/* INPUT FIELD FOR ASSISTANT NAME */}
-            <input 
-                type="text" 
-                placeholder='eg. shifra'
-                className='w-full max-w-[600px] h-[60px] outline-none border-2 
-                           border-white bg-transparent text-white placeholder-gray-300 
-                           px-[20px] py-[10px] rounded-full text-[18px]'
-                required 
-                value={assistantName}
-                onChange={(e) => setAssistantName(e.target.value)}
-            />
-
-            {error && <p role="alert" className="mt-4 text-center text-sm text-rose-300">{error}</p>}
-
-            {/* SUBMIT BUTTON */}
-            {assistantName && (
-                <button
-                    className="min-w-[min(300px,90vw)] h-[60px] mt-[30px] text-black 
-                               font-semibold cursor-pointer bg-white rounded-full 
-                               text-[19px] disabled:cursor-wait disabled:opacity-60"
-                    disabled={loading}           // Disable button while loading
-                    onClick={handleUpdateAssistant}
-                >
-                    {!loading ? "Finally Create Your Assistant" : "Loading..."}
+            <main className="mx-auto max-w-4xl px-4 pb-16 pt-8 sm:px-6 sm:pt-12">
+                <button type="button" className="btn btn-ghost mb-6 px-3" onClick={() => navigate("/customize")}>
+                    <RiArrowLeftLine className="h-[18px] w-[18px]" />
+                    Back
                 </button>
-            )}
+
+                <StepHeader
+                    step={2}
+                    total={2}
+                    title="Give your assistant a name"
+                    description="You'll say this name to wake it up, so pick something short and easy to pronounce."
+                />
+
+                <div className="card grid gap-6 p-5 sm:grid-cols-[200px_1fr] sm:p-7">
+                    <div className="mx-auto aspect-[3/4] w-40 overflow-hidden rounded-2xl bg-surface-2 sm:w-full">
+                        {previewImage && <img src={previewImage} alt="Selected assistant" className="h-full w-full object-cover" />}
+                    </div>
+
+                    <form className="flex flex-col" onSubmit={handleUpdateAssistant}>
+                        <label htmlFor="assistant-name" className="text-sm font-medium">Assistant name</label>
+                        <input
+                            id="assistant-name"
+                            type="text"
+                            placeholder="e.g. Shifra"
+                            className="field mt-1.5 h-12 text-base"
+                            maxLength={40}
+                            autoFocus
+                            required
+                            value={assistantName}
+                            onChange={(e) => setAssistantName(e.target.value)}
+                        />
+
+                        <div className="mt-3 flex flex-wrap gap-2">
+                            {nameSuggestions.map((suggestion) => (
+                                <button
+                                    key={suggestion}
+                                    type="button"
+                                    className={`rounded-full border px-3 py-1 text-xs font-medium transition
+                                        ${trimmedName === suggestion ? "border-accent bg-accent-soft text-accent" : "border-line text-muted hover:border-accent hover:text-fg"}`}
+                                    onClick={() => setAssistantName(suggestion)}
+                                >
+                                    {suggestion}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="mt-6 rounded-xl bg-surface-2 p-4 text-sm">
+                            <p className="text-muted">Try saying</p>
+                            <p className="mt-1 font-medium">“{trimmedName || "…"}, what's the time?”</p>
+                        </div>
+
+                        {error && <p role="alert" className="mt-4 rounded-lg bg-danger-soft px-3 py-2 text-sm text-danger">{error}</p>}
+
+                        <button type="submit" className="btn btn-primary mt-6 h-12 w-full sm:mt-auto" disabled={loading || !trimmedName}>
+                            {loading ? "Saving…" : userData?.assistantName ? "Save changes" : "Create my assistant"}
+                        </button>
+                    </form>
+                </div>
+            </main>
         </div>
     )
 }

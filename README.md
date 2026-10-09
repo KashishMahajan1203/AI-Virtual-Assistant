@@ -8,20 +8,17 @@ The assistant interprets natural language, answers user questions, and performs 
 ---
 
 ## 📸 Screenshots
-### 📝 SignUp Page
-![Signup Page](https://res.cloudinary.com/dfacldueh/image/upload/v1791194722/Screenshot_2026-10-05_153421_t7lmmh.png)
+### 📝 Create Your Account
+![Sign up page](https://res.cloudinary.com/dfacldueh/image/upload/v1791527917/Screenshot_2026-10-09_120714_uweuss.png)
 
-### 🔐 SignIn Page
-![Signin Page ](https://res.cloudinary.com/dfacldueh/image/upload/v1791194327/Screenshot_2026-10-05_152647_ikcd7q.png)
+### 🤖 Step 1 – Choose Your Assistant's Look
+![Choose assistant image](https://res.cloudinary.com/dfacldueh/image/upload/v1791527918/Screenshot_2026-10-09_120805_xdk1jk.png)
 
-### 🤖 Select Assistant Image 
-![image](https://res.cloudinary.com/dfacldueh/image/upload/v1791194327/Screenshot_2026-10-05_152740_pelgxu.png)
+### 👤 Step 2 – Name Your Assistant
+![Name your assistant](https://res.cloudinary.com/dfacldueh/image/upload/v1791527917/Screenshot_2026-10-09_120818_zgylgj.png)
 
-### 👤 Select Assistant Name
-![name](https://res.cloudinary.com/dfacldueh/image/upload/v1791194326/Screenshot_2026-10-05_152756_ygup9a.png)
-
-### ⭐ Talk to your Assistant
-![talk](https://res.cloudinary.com/dfacldueh/image/upload/v1791194327/Screenshot_2026-10-05_152724_bqvdnx.png)
+### ⭐ Dashboard – Talk to Your Assistant
+![Assistant dashboard](https://res.cloudinary.com/dfacldueh/image/upload/v1791527917/Screenshot_2026-10-09_120752_jeatau.png)
 
 --- 
 
@@ -54,6 +51,40 @@ Supplies accurate and current:
 # 🧠 AI Response Engine
 
 Processes user prompts using NLP and produces contextual, intelligent responses.
+
+# 🌗 Light & Dark Theme
+
+Follows the system theme on first visit, can be toggled from any page and is remembered across visits.
+
+# 💬 Dashboard
+
+Voice wake-word ("Nova, what's the time?") plus a typed-command fallback, a live conversation view, one-click suggestions and recent-command history you can re-run, edit, delete or clear.
+
+# 🔐 Security & Production Readiness
+
+* **JWT authentication** in an `httpOnly` cookie (7-day expiry; `Secure` + `SameSite=None` in production)
+* **bcrypt** password hashing (cost factor 12) with a 72-byte password limit
+* **Input validation** on every endpoint (email format, lengths, type checks against NoSQL-injection payloads, https-only image URLs, 16 KB JSON body limit)
+* **Image upload validation**: images only, max 5 MB (checked on both client and server)
+* **Rate limiting**: global API limiter plus a stricter limiter on auth routes
+* **CORS** allow-list with credentials
+* **Helmet** security headers (CSP, HSTS, nosniff; `X-Powered-By` removed)
+* **HTTPS-only** in production (`426 Upgrade Required` for plain HTTP behind a proxy)
+* **MongoDB unique index** on email
+* **PM2** process manager config (`ecosystem.config.cjs`) with auto-restart and memory limit
+* **Environment variables** via `.env` (git-ignored); the server refuses to start without a strong `JWT_SECRET`
+
+# 🧪 Testing
+
+Start a production-mode test server, then run both suites (they create and clean up their own test user):
+
+```bash
+cd backend
+NODE_ENV=production PORT=5011 CORS_ORIGINS=https://test-frontend.local AUTH_RATE_LIMIT_MAX=2 node index.js
+# in another terminal
+npm run test:security   # 16 checks: HTTPS, Helmet, CORS, JWT, rate limit, upload limits, bcrypt, indexes
+npm run test:api        # 33 checks: full dashboard API flow, history edit/delete, JWT tampering/expiry, validation, env config
+```
 
 # 🧩 Scalable MERN Structure
 

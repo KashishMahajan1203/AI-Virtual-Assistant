@@ -13,7 +13,8 @@
     "pm2:runtime": "pm2-runtime ecosystem.config.cjs",
     "pm2:stop": "pm2 stop virtual-assistant-api",
     "pm2:logs": "pm2 logs virtual-assistant-api",
-    "test:security": "node tests/security.smoke.mjs"
+    "test:security": "node tests/security.smoke.mjs",
+    "test:api": "node tests/api.test.mjs"
   },
   "dependencies": {
     "axios": "^1.20.0",
@@ -30,5 +31,8 @@
     "mongoose": "^8.24.5",
     "multer": "^2.4.0"
   },
-  "keywords": []
+  "keywords": [],
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
 }

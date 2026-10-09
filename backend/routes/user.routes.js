@@ -1,5 +1,5 @@
 import express from "express"   // Import Express to manage routing
-import { askToAssistant, getCurrentUser, updateAssistant } from "../controllers/user.controllers.js"  // User-related controllers
+import { askToAssistant, clearHistory, deleteHistoryItem, editHistoryItem, getCurrentUser, updateAssistant } from "../controllers/user.controllers.js"  // User-related controllers
 import isAuth from "../middlewares/isAuth.js"   // Middleware to validate authentication
 import upload from "../middlewares/multer.js"   // Multer middleware for handling file uploads
 
@@ -19,5 +19,10 @@ userRouter.post(
 
 // Route to process queries sent to the assistant
 userRouter.post("/asktoassistant", isAuth, askToAssistant)
+
+// Routes to edit, delete or clear the saved command history
+userRouter.patch("/history/:index", isAuth, editHistoryItem)
+userRouter.delete("/history/:index", isAuth, deleteHistoryItem)
+userRouter.delete("/history", isAuth, clearHistory)
 
 export default userRouter   // Export router for integration in the application

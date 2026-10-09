@@ -1,225 +1,123 @@
-
-import React, { useContext, useEffect, useRef, useState } from "react";
-import bg from "../assets/authBg.png";
-import { IoEye, IoEyeOff } from "react-icons/io5";
-import { useNavigate } from "react-router-dom";
-import { userDataContext } from "../context/UserContext";
+import React, { useContext, useState } from "react";
+import { Link } from "react-router-dom";
 import axios from "axios";
+import { userDataContext } from "../context/userDataContext";
+import AuthLayout from "../components/AuthLayout";
+import PasswordField from "../components/PasswordField";
 
 function SignUp() {
-    const navigation = useNavigate();
-    const modalRef = useRef(null);
-
     const { serverUrl, setUserData } = useContext(userDataContext);
 
-    const [showPassword, setShowPassword] = useState(false);
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [err, setErr] = useState("");
     const [loading, setLoading] = useState(false);
 
-    useEffect(() => {
-        const modal = modalRef.current;
-        if (modal && !modal.open) modal.showModal();
-        return () => {
-            if (modal?.open) modal.close();
-        };
-    }, []);
+    const passwordBytes = new TextEncoder().encode(password).length;
+    const passwordOk = password.length >= 8 && passwordBytes <= 72;
 
-    // Handle Sign Up
     const handleSignUp = async (e) => {
         e.preventDefault();
-
-        // Clear old error
         setErr("");
 
-        // Basic validation
-        if (!name.trim()) {
-            setErr("Please enter your name.");
+        if (!name.trim() || !email.trim() || !password) {
+            setErr("Please fill in your name, email and password.");
             return;
         }
 
-        if (!email.trim()) {
-            setErr("Please enter your email.");
-            return;
-        }
-
-        if (!password.trim()) {
-            setErr("Please enter your password.");
-            return;
-        }
-
-        if (password.length < 8 || new TextEncoder().encode(password).length > 72) {
+        if (!passwordOk) {
             setErr("Password must be at least 8 characters and no more than 72 bytes.");
             return;
         }
 
         setLoading(true);
-
         try {
-            console.log("Sending signup request...");
-            console.log("Server URL:", serverUrl);
-
             const result = await axios.post(
                 `${serverUrl}/api/auth/signup`,
-                {
-                    name: name.trim(),
-                    email: email.trim(),
-                    password,
-                },
-                {
-                    withCredentials: true,
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                }
+                { name: name.trim(), email: email.trim(), password },
+                { withCredentials: true }
             );
 
-            console.log("Signup successful:", result.data);
-
-            // Save user data
-            setUserData(result.data.user);
-
-            // Navigate after successful signup
-            navigation("/customize");
-
+            setUserData(result.data.user);   // The router redirects to /customize
         } catch (error) {
-            console.error("SIGNUP ERROR:", error);
-
-            // Backend response error
-            if (error.response) {
-                console.error("Status:", error.response.status);
-                console.error("Response:", error.response.data);
-
-                setErr(
-                    error.response.data?.message ||
-                    error.response.data?.error ||
-                    `Signup failed. Server returned ${error.response.status}.`
-                );
-            }
-
-            // Request was sent but no response received
-            else if (error.request) {
-                console.error("No response received:", error.request);
-
-                setErr(
-                    "Unable to connect to the server. Please make sure the backend is running."
-                );
-            }
-
-            // Something went wrong before request was sent
-            else {
-                console.error("Request error:", error.message);
-
-                setErr(
-                    error.message || "An error occurred during sign up."
-                );
-            }
-
             setUserData(null);
-
+            if (error.response) {
+                setErr(error.response.data?.message || `Signup failed. Server returned ${error.response.status}.`);
+            } else {
+                setErr("Unable to connect to the server. Please make sure the backend is running.");
+            }
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div
-            className="relative isolate w-full min-h-screen bg-cover bg-center flex justify-center items-center px-4 py-8 scroll-hidden"
-            style={{ backgroundImage: `url(${bg})` }}
-        >
-            <dialog ref={modalRef} className="auth-modal auth-card scroll-hidden" onCancel={(event) => event.preventDefault()}>
-              <form className="flex flex-col gap-5" onSubmit={handleSignUp}>
-                <div>
-                    <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-sky-300">Virtual Assistant</p>
-                    <h1 id="signup-title" className="text-white text-3xl sm:text-4xl font-semibold leading-tight">Create your account</h1>
-                    <p className="mt-2 text-sm sm:text-base text-slate-300">A few details, then your assistant is yours to personalize.</p>
-                </div>
+        <AuthLayout>
+            <h1 className="text-3xl font-semibold tracking-tight">Create your account</h1>
+            <p className="mt-2 text-sm text-muted">A few details, then your assistant is yours to personalise.</p>
 
-                {/* Name */}
-                <div className="flex flex-col gap-2">
-                    <label htmlFor="signup-name" className="text-sm font-medium text-slate-200">Your name</label>
+            <form className="mt-8 flex flex-col gap-5" onSubmit={handleSignUp}>
+                <div className="flex flex-col gap-1.5">
+                    <label htmlFor="signup-name" className="text-sm font-medium">Your name</label>
                     <input
                         id="signup-name"
                         type="text"
                         autoComplete="name"
                         placeholder="Enter your name"
-                        className="auth-input placeholder:text-slate-400 text-base"
+                        className="field"
+                        maxLength={80}
                         required
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                     />
                 </div>
 
-                {/* Email */}
-                <div className="flex flex-col gap-2">
-                    <label htmlFor="signup-email" className="text-sm font-medium text-slate-200">Email address</label>
+                <div className="flex flex-col gap-1.5">
+                    <label htmlFor="signup-email" className="text-sm font-medium">Email address</label>
                     <input
                         id="signup-email"
                         type="email"
                         autoComplete="email"
                         placeholder="name@example.com"
-                        className="auth-input placeholder:text-slate-400 text-base"
+                        className="field"
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                     />
                 </div>
 
-                {/* Password */}
-                <div className="flex flex-col gap-2">
-                    <label htmlFor="signup-password" className="text-sm font-medium text-slate-200">Password</label>
-                    <div className="relative">
-                        <input
-                            id="signup-password"
-                            type={showPassword ? "text" : "password"}
-                            autoComplete="new-password"
-                            placeholder="At least 6 characters"
-                            className="auth-input pr-14 placeholder:text-slate-400 text-base"
-                            required
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                        />
-                        <button
-                            type="button"
-                            aria-label={showPassword ? "Hide password" : "Show password"}
-                            className="absolute inset-y-0 right-4 grid place-items-center text-slate-300 transition hover:text-white"
-                            onClick={() => setShowPassword((visible) => !visible)}
-                        >
-                            {showPassword ? <IoEyeOff className="h-5 w-5" /> : <IoEye className="h-5 w-5" />}
-                        </button>
-                    </div>
+                <div>
+                    <PasswordField
+                        id="signup-password"
+                        label="Password"
+                        autoComplete="new-password"
+                        placeholder="At least 8 characters"
+                        aria-describedby="signup-password-hint"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                    />
+                    <p
+                        id="signup-password-hint"
+                        className={`mt-1.5 text-xs ${password && !passwordOk ? "text-danger" : password ? "text-success" : "text-muted"}`}
+                    >
+                        {password && passwordOk ? "Looks good." : "Use 8 or more characters."}
+                    </p>
                 </div>
 
-                {/* Error */}
-                {err && (
-                    <p role="alert" className="-mt-2 text-sm text-rose-300">
-                        * {err}
-                    </p>
-                )}
+                {err && <p role="alert" className="rounded-lg bg-danger-soft px-3 py-2 text-sm text-danger">{err}</p>}
 
-                {/* Submit */}
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className="auth-button w-full mt-1"
-                >
-                    {loading ? "Creating Account..." : "Sign Up"}
+                <button type="submit" disabled={loading} className="btn btn-primary h-12 w-full">
+                    {loading ? "Creating account…" : "Create account"}
                 </button>
+            </form>
 
-                {/* Sign In */}
-                <p className="text-center text-sm text-slate-300">
-                    Already have an account?{" "}
-                    <button type="button" className="font-semibold text-sky-300 transition hover:text-white" onClick={() => navigation("/signin")}>
-                        Sign in
-                    </button>
-                </p>
-                            </form>
-                        </dialog>
-        </div>
+            <p className="mt-6 text-center text-sm text-muted">
+                Already have an account?{" "}
+                <Link to="/signin" className="font-semibold text-accent hover:underline">Sign in</Link>
+            </p>
+        </AuthLayout>
     );
 }
 
 export default SignUp;
-

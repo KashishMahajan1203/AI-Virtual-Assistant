@@ -1,27 +1,88 @@
 @import "tailwindcss";
 
-:root {
-  font-family: Inter, "Segoe UI", sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.95);
-  background: #020817;
+/* `dark:` utilities follow the data-theme attribute set in index.html */
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+/* Semantic colour tokens: use bg-canvas, bg-surface, text-fg, text-muted, border-line, bg-accent ... */
+@theme inline {
+  --font-sans: "Inter", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-soft: var(--accent-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-success: var(--success);
+  --color-warn: var(--warn);
 }
 
-html, body, #root {
+:root {
+  color-scheme: light;
+  --canvas: #f4f6fb;
+  --surface: #ffffff;
+  --surface-2: #eef1f8;
+  --fg: #0f172a;
+  --muted: #5b6478;
+  --line: #dde2ee;
+  --accent: #4f6bff;
+  --accent-hover: #3d58ef;
+  --accent-fg: #ffffff;
+  --accent-soft: #e8ecff;
+  --danger: #d92d4b;
+  --danger-soft: #fde8ec;
+  --success: #12a46b;
+  --warn: #b26b00;
+  --glow: rgba(79, 107, 255, 0.16);
+  --shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 12px 32px rgba(15, 23, 42, 0.07);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --canvas: #080b14;
+  --surface: #111624;
+  --surface-2: #181e2f;
+  --fg: #e7ebf5;
+  --muted: #949db3;
+  --line: #252c40;
+  --accent: #7189ff;
+  --accent-hover: #8a9eff;
+  --accent-fg: #0a0f1f;
+  --accent-soft: #1b2347;
+  --danger: #ff6b84;
+  --danger-soft: #3a1620;
+  --success: #34d399;
+  --warn: #f5b84a;
+  --glow: rgba(113, 137, 255, 0.22);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 40px rgba(0, 0, 0, 0.35);
+}
+
+html,
+body,
+#root {
   min-height: 100%;
-  height: 100%;
   margin: 0;
 }
 
 body {
+  font-family: var(--font-sans);
+  color: var(--fg);
   background:
-    radial-gradient(circle at top, rgba(59, 130, 246, 0.28), transparent 35%),
-    linear-gradient(135deg, #020817 0%, #0f172a 35%, #111827 100%);
-  min-height: 100vh;
+    radial-gradient(60rem 30rem at 50% -10%, var(--glow), transparent 70%),
+    var(--canvas);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -30,101 +91,178 @@ input {
   font: inherit;
 }
 
-.glass-panel {
-  background: rgba(15, 23, 42, 0.72);
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  box-shadow: 0 25px 60px rgba(15, 23, 42, 0.45);
-  backdrop-filter: blur(14px);
+button:not(:disabled) {
+  cursor: pointer;
 }
 
-.auth-card {
-  animation: auth-card-enter 500ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
-.auth-modal {
-  width: min(460px, calc(100% - 2rem));
-  max-width: none;
-  max-height: calc(100dvh - 2rem);
-  overflow-y: auto;
-  margin: auto;
-  padding: 24px;
-  color: white;
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  border-radius: 28px;
-  background: rgba(15, 23, 42, 0.92);
-  box-shadow: 0 25px 80px rgba(2, 8, 23, 0.7);
-  backdrop-filter: blur(18px);
-}
+@layer components {
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 1.25rem;
+    box-shadow: var(--shadow);
+  }
 
-.auth-modal::backdrop {
-  background: rgba(2, 8, 23, 0.7);
-  backdrop-filter: blur(7px);
-}
+  .field {
+    width: 100%;
+    height: 3rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--fg);
+    padding: 0 1rem;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
 
-.scroll-hidden {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
+  .field::placeholder {
+    color: var(--muted);
+    opacity: 0.8;
+  }
 
-.scroll-hidden::-webkit-scrollbar {
-  display: none;
-}
+  .field:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-soft);
+  }
 
-@media (min-width: 640px) {
-  .auth-modal {
-    padding: 40px;
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    border-radius: 0.75rem;
+    padding: 0 1.1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+  }
+
+  .btn:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
+  .btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--accent-fg);
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background: var(--accent-hover);
+  }
+
+  .btn-ghost {
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--fg);
+  }
+
+  .btn-ghost:hover:not(:disabled) {
+    background: var(--surface-2);
+  }
+
+  .btn-danger {
+    background: var(--danger);
+    color: #fff;
+  }
+
+  .btn-danger:hover:not(:disabled) {
+    filter: brightness(1.08);
+  }
+
+  .icon-btn {
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--fg);
+    transition: background-color 0.15s ease;
+  }
+
+  .icon-btn:hover {
+    background: var(--surface-2);
   }
 }
 
-@keyframes auth-card-enter {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Animated voice bars that replace the old 18 MB GIFs */
+.voice-bars {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 44px;
 }
 
-.auth-input {
-  width: 100%;
-  height: 58px;
+.voice-bars span {
+  width: 5px;
+  height: 100%;
   border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(15, 23, 42, 0.45);
-  color: white;
-  padding: 0 20px;
-  outline: none;
-  transition: all 0.2s ease;
+  background: currentColor;
+  transform: scaleY(0.18);
+  transition: transform 0.3s ease;
 }
 
-.auth-input:focus {
-  border-color: rgba(96, 165, 250, 0.9);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
+.voice-bars[data-active="true"] span {
+  animation: voice-bar 1s ease-in-out infinite;
 }
 
-.auth-button {
-  min-height: 56px;
-  border-radius: 9999px;
-  background: linear-gradient(120deg, #60a5fa 0%, #38bdf8 100%);
-  color: #071426;
-  font-weight: 700;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+.voice-bars[data-active="true"] span:nth-child(2) { animation-delay: -0.8s; }
+.voice-bars[data-active="true"] span:nth-child(3) { animation-delay: -0.6s; }
+.voice-bars[data-active="true"] span:nth-child(4) { animation-delay: -0.4s; }
+.voice-bars[data-active="true"] span:nth-child(5) { animation-delay: -0.2s; }
+.voice-bars[data-active="true"] span:nth-child(6) { animation-delay: -0.5s; }
+.voice-bars[data-active="true"] span:nth-child(7) { animation-delay: -0.3s; }
+
+@keyframes voice-bar {
+  0%, 100% { transform: scaleY(0.2); }
+  50% { transform: scaleY(1); }
 }
 
-.auth-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 12px 30px rgba(96, 165, 250, 0.25);
+/* Soft pulsing ring around the assistant while it listens or speaks */
+.pulse-ring {
+  position: relative;
 }
 
-.auth-button:disabled {
-  opacity: 0.7;
-  cursor: wait;
+.pulse-ring[data-active="true"]::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: inherit;
+  border: 2px solid var(--accent);
+  animation: pulse-ring 1.8s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes pulse-ring {
+  0% { opacity: 0.7; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.04); }
+}
+
+.fade-up {
+  animation: fade-up 0.4s cubic-bezier(0.2, 0.75, 0.25, 1) both;
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .auth-card {
+  .voice-bars[data-active="true"] span,
+  .pulse-ring[data-active="true"]::after,
+  .fade-up {
     animation: none;
   }
 }
