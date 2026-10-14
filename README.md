@@ -215,7 +215,7 @@ For collaboration or inquiries:
 
 Email: kashishmahajan878@gmail.com
 
-LinkedIn: https://www.linkedin.com/in/kashish-mahajan-0591ba2b4/
+LinkedIn: https://www.linkedin.com/in/kashish-mahajan12
 
 GitHub: https://github.com/KashishMahajan1203
 
