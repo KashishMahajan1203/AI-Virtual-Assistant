@@ -1,7 +1,7 @@
 import express from "express"   // Import Express to manage routing
 import { askToAssistant, clearHistory, deleteHistoryItem, editHistoryItem, getCurrentUser, updateAssistant } from "../controllers/user.controllers.js"  // User-related controllers
 import isAuth from "../middlewares/isAuth.js"   // Middleware to validate authentication
-import upload from "../middlewares/multer.js"   // Multer middleware for handling file uploads
+import upload, { verifyImageFile } from "../middlewares/multer.js"   // Multer middleware for handling file uploads
 
 // Initialize router for user-specific operations
 const userRouter = express.Router()
@@ -14,6 +14,7 @@ userRouter.post(
     "/update",
     isAuth,                              // Validate user authentication
     upload.single("assistantImage"),     // Handle single file upload with field name "assistantImage"
+    verifyImageFile,                     // Reject files that are not really images
     updateAssistant                       // Controller to finalize update
 )
 

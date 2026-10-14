@@ -1,4 +1,3 @@
-import { response } from "express"                     // Importing Express response object (not typically needed directly)
 import uploadOnCloudinary from "../config/cloudinary.js" // Utility for uploading images to Cloudinary
 import geminiResponse from "../gemini.js"               // AI assistant response generator
 import User from "../models/user.model.js"              // User model for DB operations
@@ -11,11 +10,12 @@ export const getCurrentUser = async (req, res) => {
         const userId = req.userId                              // Extract authenticated user's ID
         const user = await User.findById(userId).select("-password") // Fetch user while excluding password
         if (!user) {
-            return res.status(400).json({ message: "user not found" }) // No matching user
+            return res.status(401).json({ message: "user not found" }) // Account no longer exists: treat as signed out
         }
         return res.status(200).json(user)                      // Respond with user details
     } catch (error) {
-        return res.status(400).json({ message: "get current user error" }) // Error handling
+        console.error("GET CURRENT USER ERROR:", error)
+        return res.status(500).json({ message: "get current user error" }) // Error handling
     }
 }
 
@@ -98,8 +98,12 @@ export const askToAssistant = async (req, res) => {
             return res.status(400).json({ response: "sorry, i can't understand" }) // Invalid AI output
         }
 
-        const gemResult = JSON.parse(jsonMatch[0])              // Convert string to JSON object
-        console.log(gemResult)
+        let gemResult
+        try {
+            gemResult = JSON.parse(jsonMatch[0])                // Convert string to JSON object
+        } catch {
+            return res.status(502).json({ response: "sorry, i can't understand" }) // AI returned malformed JSON
+        }
 
         const type = gemResult.type                             // Determine response category
 
@@ -147,9 +151,8 @@ export const askToAssistant = async (req, res) => {
             default:
                 return res.status(400).json({ response: "I didn't understand that command." }) // Unsupported command
         }
-
-        return res.status.json                                  // Unreachable fallback (not used)
     } catch (error) {
+        console.error("ASK ASSISTANT ERROR:", error)
         return res.status(500).json({ response: "ask assistant error" }) // Critical system error
     }
 }

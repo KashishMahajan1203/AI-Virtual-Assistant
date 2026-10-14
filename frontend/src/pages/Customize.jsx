@@ -14,6 +14,7 @@ import image7 from '../assets/image7.jpeg'
 import { userDataContext } from '../context/userDataContext'
 
 const presetImages = [image1, image2, image3, image4, image5, image6, image7]
+const acceptedImageTypes = ["image/png", "image/jpeg", "image/gif", "image/webp"]   // Must match the backend allowlist
 
 function Customize() {
   const { userData, setBackendImage, frontendImage, setFrontendImage, selectedImage, setSelectedImage } = useContext(userDataContext)
@@ -37,8 +38,8 @@ function Customize() {
     const file = e.target.files?.[0]
     e.target.value = ""
     if (!file) return
-    if (!file.type.startsWith("image/")) {
-      setUploadError("Choose an image file to upload.")
+    if (!acceptedImageTypes.includes(file.type)) {
+      setUploadError("Choose a PNG, JPG, GIF or WebP image.")
       return
     }
     if (file.size > 5 * 1024 * 1024) {
@@ -60,7 +61,7 @@ function Customize() {
           step={1}
           total={2}
           title="Choose how your assistant looks"
-          description="Pick one of the presets or upload your own image (PNG, JPG or GIF, up to 5 MB)."
+          description="Pick one of the presets or upload your own image (PNG, JPG, GIF or WebP, up to 5 MB)."
         />
 
         <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 sm:gap-4 lg:grid-cols-5">
@@ -111,7 +112,7 @@ function Customize() {
             )}
           </button>
 
-          <input type="file" accept="image/*" ref={inputImage} hidden onChange={handleImage} />
+          <input type="file" accept={acceptedImageTypes.join(",")} ref={inputImage} hidden onChange={handleImage} />
         </div>
 
         {uploadError && <p role="alert" className="mt-4 text-sm text-danger">{uploadError}</p>}

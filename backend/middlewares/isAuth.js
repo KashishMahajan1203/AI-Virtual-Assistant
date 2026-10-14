@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken'    // JWT library for decoding and validating authentication tokens
+import mongoose from 'mongoose'
 
 // Middleware to authenticate incoming requests using a signed JWT
 const isAuth = async (req, res, next) => {
@@ -16,8 +17,8 @@ const isAuth = async (req, res, next) => {
             return res.status(500).json({ message: "Authentication is not configured securely" })
         }
 
-        const verifyToken = jwt.verify(token, process.env.JWT_SECRET)
-        if (typeof verifyToken !== "object" || !verifyToken.userId) {
+        const verifyToken = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ["HS256"] })
+        if (typeof verifyToken !== "object" || !mongoose.isValidObjectId(verifyToken.userId)) {
             return res.status(401).json({ message: "Unauthorized" })
         }
 

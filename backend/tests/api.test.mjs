@@ -305,6 +305,71 @@ try {
         assert.equal(response.headers.get("access-control-allow-credentials"), "true");
     });
 
+    // ---------- Image upload validation ----------
+    const uploadFile = (field, bytes, type, name) => {
+        const form = new FormData();
+        form.set("assistantName", "Jarvis");
+        form.set(field, new Blob([bytes], { type }), name);
+        return api("/api/user/update", { method: "POST", headers: headers({ cookie }), body: form });
+    };
+
+    await check("upload under an unexpected field name returns 400, not 500", async () => {
+        assert.equal((await uploadFile("avatar", "x", "image/png", "a.png")).status, 400);
+    });
+
+    await check("SVG uploads are rejected", async () => {
+        assert.equal((await uploadFile("assistantImage", "<svg/>", "image/svg+xml", "a.svg")).status, 400);
+    });
+
+    await check("non-image extension disguised as image/png is rejected", async () => {
+        assert.equal((await uploadFile("assistantImage", "<script></script>", "image/png", "a.html")).status, 400);
+    });
+
+    await check("file whose bytes are not an image is rejected and not left on disk", async () => {
+        const fs = await import("node:fs");
+        const publicDirectory = path.join(backendDirectory, "public");
+        const before = fs.readdirSync(publicDirectory).length;
+        const response = await uploadFile("assistantImage", "<script>alert(1)</script>", "image/png", "a.png");
+        assert.equal(response.status, 400);
+        assert.equal((await response.json()).message, "The uploaded file is not a valid image");
+        assert.equal(fs.readdirSync(publicDirectory).length, before);
+    });
+
+    // ---------- Error handling ----------
+    await check("malformed JSON returns 400", async () => {
+        const response = await api("/api/auth/signin", { method: "POST", headers: jsonHeaders(), body: "{bad" });
+        assert.equal(response.status, 400);
+    });
+
+    await check("unknown routes return a JSON 404", async () => {
+        const response = await api("/api/does-not-exist", { headers: headers() });
+        assert.equal(response.status, 404);
+        assert.equal((await response.json()).message, "Not found");
+    });
+
+    await check("valid JWT for a missing user or malformed id returns 401", async () => {
+        const missingUser = jwt.sign({ userId: "64b000000000000000000001" }, process.env.JWT_SECRET);
+        const badId = jwt.sign({ userId: "not-an-object-id" }, process.env.JWT_SECRET);
+        assert.equal((await api("/api/user/current", { headers: headers({ authorization: `Bearer ${missingUser}` }) })).status, 401);
+        assert.equal((await api("/api/user/current", { headers: headers({ authorization: `Bearer ${badId}` }) })).status, 401);
+        assert.equal((await api("/api/user/history", { method: "DELETE", headers: headers({ authorization: `Bearer ${badId}` }) })).status, 401);
+    });
+
+    await check("logout is not throttled by the auth rate limiter", async () => {
+        const sameIp = { "x-forwarded-proto": "https", "x-forwarded-for": "198.18.0.1" };
+        for (let attempt = 0; attempt < 4; attempt += 1) {
+            assert.equal((await api("/api/auth/logout", { method: "POST", headers: sameIp })).status, 200);
+        }
+    });
+
+    await check("successful sign-ins do not count toward the auth rate limit", async () => {
+        const sameIp = { "x-forwarded-proto": "https", "x-forwarded-for": "198.18.0.2", "content-type": "application/json" };
+        for (let attempt = 0; attempt < 4; attempt += 1) {
+            const response = await api("/api/auth/signin", { method: "POST", headers: sameIp, body: JSON.stringify({ email, password }) });
+            assert.equal(response.status, 200);
+        }
+    });
+
     // ---------- Logout ----------
     await check("logout clears the token cookie", async () => {
         const response = await api("/api/auth/logout", { method: "POST", headers: headers({ cookie }) });

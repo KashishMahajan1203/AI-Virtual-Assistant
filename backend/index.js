@@ -74,11 +74,12 @@ const authLimiter = rateLimit({
     limit: Number(process.env.AUTH_RATE_LIMIT_MAX) || (isProduction ? 10 : 100),
     standardHeaders: "draft-8",
     legacyHeaders: false,
+    skipSuccessfulRequests: true,               // Only failed attempts count, so normal sign-ins never lock users out
     message: { message: "Too many authentication attempts. Please try again later." },
 });
 
 app.use("/api", apiLimiter);
-app.use("/api/auth", authLimiter);
+app.use(["/api/auth/signin", "/api/auth/signup"], authLimiter);   // Logout is not throttled
 app.use(express.json({ limit: "16kb" }));       // Bound JSON request bodies
 app.use(cookieParser());                        // Parse cookies for authentication workflows
 
@@ -94,12 +95,21 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
 
+// Unknown routes get a JSON 404 instead of Express's HTML page
+app.use((req, res) => {
+    res.status(404).json({ message: "Not found" });
+});
+
 // Global Error Handler Middleware (Prevents Server Crashes)
 app.use((err, req, res, next) => {
     console.error("Server Error:", err.stack || err.message);
-    const status = err.code === "LIMIT_FILE_SIZE" ? 413 : err.status || err.statusCode || 500;
+    // Multer errors (unexpected field, too many files, ...) are client mistakes, not server failures
+    const status = err.code === "LIMIT_FILE_SIZE" ? 413
+        : err.name === "MulterError" ? 400
+        : err.status || err.statusCode || 500;
     res.status(status).json({
-        message: isProduction ? "Request failed" : err.message || "Internal Server Error"
+        // 4xx messages are safe to show and tell the user what to fix; 5xx details stay in the logs
+        message: isProduction && status >= 500 ? "Request failed" : err.message || "Internal Server Error"
     });
 });
 

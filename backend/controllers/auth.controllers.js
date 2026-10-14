@@ -72,7 +72,7 @@ export const signUp = async (req, res) => {
         }
 
         return res.status(500).json({
-            message: error.message || "Signup failed",
+            message: process.env.NODE_ENV === "production" ? "Signup failed" : error.message || "Signup failed",
         });
     }
 };
@@ -125,7 +125,7 @@ export const login = async (req, res) => {
         console.error("LOGIN ERROR:", error);
 
         return res.status(500).json({
-            message: error.message || "Login failed",
+            message: process.env.NODE_ENV === "production" ? "Login failed" : error.message || "Login failed",
         });
     }
 };
@@ -144,7 +144,7 @@ export const logOut = async (req, res) => {
         console.error("LOGOUT ERROR:", error);
 
         return res.status(500).json({
-            message: error.message || "Logout failed",
+            message: process.env.NODE_ENV === "production" ? "Logout failed" : error.message || "Logout failed",
         });
     }
 };
