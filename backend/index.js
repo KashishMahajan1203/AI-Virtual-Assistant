@@ -102,11 +102,16 @@ app.use((req, res) => {
 
 // Global Error Handler Middleware (Prevents Server Crashes)
 app.use((err, req, res, next) => {
-    console.error("Server Error:", err.stack || err.message);
     // Multer errors (unexpected field, too many files, ...) are client mistakes, not server failures
     const status = err.code === "LIMIT_FILE_SIZE" ? 413
         : err.name === "MulterError" ? 400
         : err.status || err.statusCode || 500;
+    if (status >= 500) {
+        console.error("Server Error:", err.stack || err.message);
+    } else {
+        // Rejected client requests are expected; a one-line note is enough
+        console.warn(`Client Error ${status}: ${req.method} ${req.originalUrl} - ${err.message}`);
+    }
     res.status(status).json({
         // 4xx messages are safe to show and tell the user what to fix; 5xx details stay in the logs
         message: isProduction && status >= 500 ? "Request failed" : err.message || "Internal Server Error"
@@ -128,7 +133,7 @@ const startServer = async () => {
             console.log(`Server started on port ${port}`);
         });
     } catch (error) {
-        console.error("Failed to connect to Database:", error.message);
+        console.error("Failed to start server:", error.message);
         process.exit(1);
     }
 };
