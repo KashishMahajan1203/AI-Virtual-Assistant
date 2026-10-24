@@ -3,8 +3,6 @@
 A dynamic AI-powered Virtual Assistant built on the MERN stack, engineered to deliver seamless conversational interactions and execute real-time user commands.
 The assistant interprets natural language, answers user questions, and performs tasks such as opening social platforms, searching Google and YouTube, showing the weather, and telling the current date and time.
 
-[⚡🧠 Access the Intelligent Response Engine!!](https://ai-virtual-assistant-02m7.onrender.com/)
-
 ---
 
 ## 📸 Screenshots
