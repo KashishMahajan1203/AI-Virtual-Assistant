@@ -13,7 +13,7 @@ const highlights = [
 // Split-screen layout shared by the sign-in and sign-up pages
 function AuthLayout({ children }) {
   return (
-    <div className="grid min-h-screen lg:grid-cols-[1.05fr_1fr]">
+    <div className="grid min-h-screen lg:grid-cols-[1.05fr_1fr]">  
       <aside
         className="relative hidden overflow-hidden bg-cover bg-center lg:flex"
         style={{ backgroundImage: `url(${bg})` }}
@@ -57,4 +57,6 @@ function AuthLayout({ children }) {
   )
 }
 
-export default AuthLayout
+export default AuthLayout;
+
+

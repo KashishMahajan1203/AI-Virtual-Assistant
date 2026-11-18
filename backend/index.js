@@ -1,4 +1,9 @@
 import dns from "dns";
+
+dns.setServers([
+    "8.8.8.8",
+    "8.8.4.4",
+]);
 import "dotenv/config";
 import express from "express";
 import connectDb from "./config/db.js";
@@ -9,10 +14,7 @@ import helmet from "helmet";
 import { rateLimit } from "express-rate-limit";
 import userRouter from "./routes/user.routes.js";
 
-dns.setServers([
-    "8.8.8.8",
-    "8.8.4.4",
-]);
+
 
 const app = express();                        // Initialize the Express application
 const isProduction = process.env.NODE_ENV === "production";
@@ -105,7 +107,7 @@ app.use((err, req, res, next) => {
     // Multer errors (unexpected field, too many files, ...) are client mistakes, not server failures
     const status = err.code === "LIMIT_FILE_SIZE" ? 413
         : err.name === "MulterError" ? 400
-        : err.status || err.statusCode || 500;
+            : err.status || err.statusCode || 500;
     if (status >= 500) {
         console.error("Server Error:", err.stack || err.message);
     } else {
@@ -128,8 +130,8 @@ const startServer = async () => {
         }
         await connectDb();                      // Establish connection to MongoDB asynchronously
         console.log("Connected to Database successfully.");
-        
-        app.listen(port, () => {
+
+        app.listen(port, "0.0.0.0", () => {
             console.log(`Server started on port ${port}`);
         });
     } catch (error) {
