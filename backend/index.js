@@ -80,6 +80,24 @@ app.use(["/api/auth/signin", "/api/auth/signup"], authLimiter);
 app.use(express.json({ limit: "16kb" }));
 app.use(cookieParser());
 
+
+// Ensure MongoDB is connected before handling API requests
+app.use(async (req, res, next) => {
+    try {
+        if (
+            !process.env.JWT_SECRET ||
+            Buffer.byteLength(process.env.JWT_SECRET) < 32
+        ) {
+            throw new Error("JWT_SECRET must be configured with at least 32 bytes");
+        }
+
+        await connectDb();
+        next();
+    } catch (error) {
+        next(error);
+    }
+});
+
 // Database connection is handled by the Vercel entry point.
 
 app.get("/", (req, res) => {
